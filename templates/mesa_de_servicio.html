@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Mesa de Servicio</title>
+
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    primary: '#005a9e',
+                    'navbar-bg': '#B3DAE6', // Tu celeste
+                    'navbar-text': '#000066', // Tu azul oscuro
+                    'navbar-hover': '#A2CCDB',
+                    "background-light": "#f5f5f5",
+                    "card-light": "#ffffff",
+                    "border-light": "#e2e8f0",
+                    "text-light": "#333333",
+                },
+                fontFamily: {
+                    sans: ['Roboto', 'sans-serif'],
+                },
+            },
+        },
+    };
+</script>
+</head>
+
+
+<body class="bg-background-light font-sans">
+
+<div class="bg-navbar-bg flex justify-center items-center flex-wrap gap-2 px-4 py-2">
+
+  <!-- AUDITORIAS  -->
+  <div class="group relative inline-block">
+    <button class="bg-transparent text-navbar-text text-sm font-bold py-2 px-4 rounded hover:bg-navbar-hover">
+      AUDITORÍAS ▾
+    </button>
+    <div class="hidden group-hover:block absolute bg-white shadow-lg rounded-md min-w-[260px] z-10">
+      
+      <div class="group/sub relative">
+        <button class="w-full text-left py-2 px-4 text-sm font-semibold hover:bg-gray-100">Auditoría de Cumplimiento ▸</button>
+        <div class="hidden group-hover/sub:block absolute left-full top-0 bg-white shadow-lg rounded-md min-w-[250px] z-10">
+          <a href="{{ url_for('pagina_buscador_ats', tipo_origen='AUDITORIA_CUMPLIMIENTO') }}" class="block py-2 px-4 text-sm hover:bg-gray-100">Búscador de ATs de Cumplimiento</a>
+        </div>
+      </div>
+      <!--
+      <div class="group/sub relative">
+        <button class="w-full text-left py-2 px-4 text-sm font-semibold hover:bg-gray-100">Auditoría de Estados Financieros EEFF ▸</button>
+        <div class="hidden group-hover/sub:block absolute left-full top-0 bg-white shadow-lg rounded-md min-w-[250px] z-10">
+          <a href="{{ url_for('pagina_buscador_ats', tipo_origen='AUDITORIA_FINANCIERA') }}" class="block py-2 px-4 text-sm hover:bg-gray-100">Búscador AT Financiera</a>
+        </div>
+      </div>
+      -->
+      <div class="group/sub relative">
+        <button class="w-full text-left py-2 px-4 text-sm font-semibold hover:bg-gray-100">Auditoría Simplificada ▸</button>
+        <div class="hidden group-hover/sub:block absolute left-full top-0 bg-white shadow-lg rounded-md min-w-[250px] z-10">
+          <a href="{{ url_for('pagina_buscador_ats', tipo_origen='AUDITORIA_SIMPLIFICADA') }}" class="block py-2 px-4 text-sm hover:bg-gray-100">Búscador AT Simplificada</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- INSPECCIÓN TÉCNICA DE OBRAS  -->
+  <!--<div class="group relative inline-block">
+    <button class="bg-transparent text-navbar-text text-sm font-bold py-2 px-4 rounded hover:bg-navbar-hover">
+      IOPs ▾
+    </button>
+    <div class="hidden group-hover:block absolute bg-white shadow-lg rounded-md min-w-[260px] z-10">
+      <a href="{{ url_for('pagina_buscador_ats', tipo_origen='INSPECCION_TECNICA_OBRA') }}" class="block py-2 px-4 text-sm hover:bg-gray-100">Reabrir AT IOP</a>
+    </div>
+  </div>
+-->
+    <!-- ATENCIÓN DE REFERENCIAS DE AUDITORIAS - INVESTIGACIÓN ESPECIAL  -->
+  <div class="group relative inline-block">
+    <button class="bg-transparent text-navbar-text text-sm font-bold py-2 px-4 rounded hover:bg-navbar-hover">
+      ARAs e INVEs ▾
+    </button>
+    <div class="hidden group-hover:block absolute bg-white shadow-lg rounded-md min-w-[260px] z-10">
+      
+      <div class="group/sub relative">
+        <button class="w-full text-left py-2 px-4 text-sm font-semibold hover:bg-gray-100">Atención de Referencias ARA ▸</button>
+        <div class="hidden group-hover/sub:block absolute left-full top-0 bg-white shadow-lg rounded-md min-w-[250px] z-10">
+          <a href="{{ url_for('pagina_buscador_ats', tipo_origen='ATENCION_REFERENCIA') }}" class="block py-2 px-4 text-sm hover:bg-gray-100">Buscador ATs ARA</a>
+        </div>
+      </div>
+      
+      <div class="group/sub relative">
+        <button class="w-full text-left py-2 px-4 text-sm font-semibold hover:bg-gray-100">Investigación Especial INVE ▸</button>
+        <div class="hidden group-hover/sub:block absolute left-full top-0 bg-white shadow-lg rounded-md min-w-[250px] z-10">
+          <a href="{{ url_for('pagina_buscador_ats', tipo_origen='INVESTIGACION') }}" class="block py-2 px-4 text-sm hover:bg-gray-100">Buscadr ATs INVE</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- PROCEDIMIENTO DISCIPLINARIO  -->
+  <!--<div class="group relative inline-block">
+    <button class="bg-transparent text-navbar-text text-sm font-bold py-2 px-4 rounded hover:bg-navbar-hover">
+      PRDI ▾
+    </button>
+    <div class="hidden group-hover:block absolute bg-white shadow-lg rounded-md min-w-[260px] z-10">
+      <a href="#" class="block py-2 px-4 text-sm hover:bg-gray-100">Eliminar registro actividad PRDI</a> 
+      <a href="#" class="block py-2 px-4 text-sm hover:bg-gray-100">Reabrir registro flujo de revisión...</a> 
+      <a href="#" class="block py-2 px-4 text-sm hover:bg-gray-100">Enviar registro actividad Carpeta...</a>
+      <a href="#" class="block py-2 px-4 text-sm hover:bg-gray-100">Enviar registro actividad Expediente...</a> 
+    </div>
+  </div>
+  -->
+  <!-- SISTEMA INSPECCIÓN ACCIONES DERIVADAS   -->
+  <div class="group relative inline-block">
+    <button class="bg-transparent text-navbar-text text-sm font-bold py-2 px-4 rounded hover:bg-navbar-hover">
+      SIAD ▾
+    </button>
+    <div class="hidden group-hover:block absolute bg-white shadow-lg rounded-md min-w-[260px] z-10">
+      <a href="{{ url_for('pagina_gestion_usuarios_siad') }}" class="block py-2 px-4 text-sm hover:bg-gray-100">Gestión de usuarios SIAD</a> 
+      <a href="{{ url_for('pagina_modificar_actuacion_siad') }}" class="block py-2 px-4 text-sm hover:bg-gray-100">Modificar registro actuación caso SIAD</a>
+    </div>
+  </div>
+
+  <!-- SEGUIMIENTO   -->
+  <!--
+  <div class="group relative inline-block">
+    <button class="bg-transparent text-navbar-text text-sm font-bold py-2 px-4 rounded hover:bg-navbar-hover">
+      SEGUIMIENTO ▾
+    </button>
+    <div class="hidden group-hover:block absolute bg-white shadow-lg rounded-md min-w-[260px] z-10">
+      
+      <div class="group/sub relative">
+        <button class="w-full text-left py-2 px-4 text-sm font-semibold hover:bg-gray-100">Flujo de revisión seguimiento ▸</button>
+        <div class="hidden group-hover/sub:block absolute left-full top-0 bg-white shadow-lg rounded-md min-w-[250px] z-10">
+          <a href="#" class="block py-2 px-4 text-sm hover:bg-gray-100">Reabrir flujo de revisión</a>
+        </div>
+      </div>
+      
+      <div class="group/sub relative">
+        <button class="w-full text-left py-2 px-4 text-sm font-semibold hover:bg-gray-100">OBSERVACIONES CONTABLES ▸</button>
+        <div class="hidden group-hover/sub:block absolute left-full top-0 bg-white shadow-lg rounded-md min-w-[250px] z-10">
+          <a href="#" class="block py-2 px-4 text-sm hover:bg-gray-100">Modificar observación SEOBCON</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+  -->
+  <!-- REPORTES   -->
+  <a href="{{ url_for('pagina_reportes') }}" class="bg-transparent text-navbar-text text-sm font-bold py-2 px-4 rounded hover:bg-navbar-hover">
+    REPORTES
+  </a>
+
+</div>
+
+<div class="h-1 bg-navbar-bg"></div>
+
+<div class="container mx-auto p-12 text-center">
+  
+  <h1 class="text-3xl font-bold text-primary mb-3">Mesa de Servicio</h1>
+  <p class="text-lg text-text-light max-w-2xl mx-auto">
+    Bienvenido a la Mesa de Servicio.<br>
+    Este es el centro de soporte institucional para la gestión de procesos de auditoría, cumplimiento e inspección.<br>
+    Seleccione el módulo correspondiente en el menú superior para realizar las acciones necesarias en los sistemas internos.
+  </p>
+</div>
+
+</body>
+</html>

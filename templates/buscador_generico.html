@@ -1,0 +1,297 @@
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Mesa de Servicio</title> <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    primary: '#005a9e', // Tu azul
+                    'navbar-bg': '#B3DAE6', // Tu celeste
+                    'navbar-text': '#000066', // Tu azul oscuro
+                    'navbar-hover': '#A2CCDB',
+                    "background-light": "#f5f5f5",
+                    "card-light": "#ffffff",
+                    "border-light": "#e2e8f0",
+                    "text-light": "#333333",
+                },
+                fontFamily: {
+                    sans: ['Roboto', 'sans-serif'],
+                },
+            },
+        },
+    };
+</script>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark text-text-light dark:text-text-dark font-display">
+<div class="min-h-screen">
+
+<header style="background-color: #B3DAE6;" class="shadow-md">
+<div class="container mx-auto px-4 py-2">
+
+    <div class="flex justify-between items-center">
+
+        <div>
+            <a href="/" class="text-xl font-bold text-primary dark:text-blue-400 hover:underline">Mesa de Servicio</a>
+            <span class="text-gray-500 dark:text-gray-400">/</span>
+            <span class="text-lg font-semibold text-text-light dark:text-text-dark">Buscador {{ tipo_origen.replace("_", " ") }}</span>
+        </div>
+
+        <div>
+            <a href="/" class="text-sm text-blue-900 hover:underline flex items-center">
+                <span class="material-icons text-base mr-1">arrow_back</span>
+                Volver al Inicio
+            </a>
+        </div>
+
+    </div>
+    </div>
+</header>
+
+<main class="container mx-auto px-4 py-6">
+<div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow">
+<h2 class="text-lg font-semibold text-primary dark:text-blue-400 border-b border-border-light dark:border-border-dark pb-2 mb-4">Buscador de: {{ tipo_origen.replace("_", " ") }}</h2>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, message in messages %}
+      <div style="background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; padding: 15px; border-radius: 5px; margin-top: 15px; font-weight: 500;">
+        <strong>Error:</strong> {{ message }}
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+<div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-md mt-4">
+    
+<h3 class="font-semibold text-gray-700 dark:text-gray-200 mb-4">Filtros de búsqueda</h3>
+
+<form method="POST" action="{{ url_for('pagina_buscador_ats', tipo_origen=tipo_origen) }}">
+    
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+<div>
+    <label class="block text-gray-600 dark:text-gray-300 mb-1" for="periodo">Período de Planificación: <span class="text-red-500">*</span></label>
+    <input class="w-full bg-white dark:bg-gray-600 border border-border-light dark:border-border-dark rounded-md shadow-sm p-2 focus:ring-primary focus:border-primary" id="periodo" type="text" name="periodo" value="{{ filtros.periodo or '' }}" />
+</div>
+<div>
+    <label class="block text-gray-600 dark:text-gray-300 mb-1" for="tipo_programa">Número de AT</label>
+    <input class="w-full bg-white dark:bg-gray-600 border border-border-light dark:border-border-dark rounded-md shadow-sm p-2 focus:ring-primary focus:border-primary" id="numero_at" type="text" name="numero_at" value="{{ filtros.nro_at or '' }}" />
+</select>
+</div>
+
+<div>
+<label class="block text-gray-600 dark:text-gray-300 mb-1" for="uce">UCE:</label>
+<select class="w-full bg-white dark:bg-gray-600 border border-border-light dark:border-border-dark rounded-md shadow-sm p-2 focus:ring-primary focus:border-primary" id="uce" name="uce">
+    <option value="">Seleccione..</option>
+</select>
+</div>
+
+<div>
+<label class="block text-gray-600 dark:text-gray-300 mb-1" for="servicio">Servicio:</label>
+<select class="w-full bg-white dark:bg-gray-600 border border-border-light dark:border-border-dark rounded-md shadow-sm p-2 focus:ring-primary focus:border-primary" id="servicio" name="servicio">
+    <option value="">Seleccione..</option>
+</select>
+</div>
+
+<div>
+<label class="block text-gray-600 dark:text-gray-300 mb-1" for="n_programa">Nº Programa:</label>
+<input class="w-full bg-white dark:bg-gray-600 border border-border-light dark:border-border-dark rounded-md shadow-sm p-2 focus:ring-primary focus:border-primary" id="n_programa" type="text" name="n_programa" value="{{ filtros.n_programa or '' }}"/>
+</div>
+
+    {# --- INICIO: Condición para mostrar Número de Referencia --- #}
+    {% if tipo_origen == 'ATENCION_REFERENCIA' or tipo_origen == 'INVESTIGACION' %}
+    <div>
+        <label class="block text-gray-600 dark:text-gray-300 mb-1" for="num_referencia">Número de Referencia:</label>
+        <input class="w-full bg-white dark:bg-gray-600 border border-border-light dark:border-border-dark rounded-md shadow-sm p-2 focus:ring-primary focus:border-primary"
+            id="num_referencia" type="text" name="num_referencia"
+            value="{{ filtros.num_referencia or '' }}" />
+    </div>
+    {% endif %}
+    {# --- FIN: Condición --- #}
+   
+ 
+</div>
+
+<div class="flex justify-end mt-4 space-x-2">
+    <button type="submit" class="bg-primary hover:bg-primary/90 dark:bg-blue-600 dark:hover:bg-blue-500 text-white font-semibold py-2 px-4 rounded-md shadow-sm flex items-center text-sm transition-colors duration-150">
+        <span class="material-icons text-base mr-1">search</span>
+        Buscar
+    </button>
+    
+    <button type="button" id="btn-limpiar" class="bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border border-border-light dark:border-border-dark hover:bg-gray-100 dark:hover:bg-gray-600 font-semibold py-2 px-4 rounded-md shadow-sm flex items-center text-sm transition-colors duration-150">
+        <span class="material-icons text-base mr-1">cleaning_services</span>
+        Limpiar
+    </button>
+</div>
+
+</form>
+
+</div>
+
+<div class="mt-6">
+<div class="flex justify-between items-center border-b border-border-light dark:border-border-dark pb-2 mb-4">
+<h3 class="font-semibold text-gray-700 dark:text-gray-200">Resultados de la búsqueda</h3>
+{% if num_resultados is defined and num_resultados is not none %}
+    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">
+        Registros encontrados: {{ num_resultados }}
+    </span>
+{% endif %}
+
+</div>
+
+<div class="overflow-x-auto">
+<table class="w-full text-sm text-left">
+<thead class="bg-primary text-white uppercase text-xs">
+<tr>
+    <th class="px-6 py-3" scope="col">Acciones</th>
+    <th class="px-6 py-3" scope="col">ACFI_ID</th> 
+    <th class="px-6 py-3" scope="col">UCE</th>
+    <th class="px-6 py-3" scope="col">Nº Programa</th>
+    <th class="px-6 py-3" scope="col">Servicio</th>
+    <th class="px-6 py-3" scope="col">Estado</th>
+</tr>
+</thead>
+
+<tbody>
+    
+    {% if resultados is defined and resultados %}
+        {% for fila in resultados %}
+            <tr class="bg-white dark:bg-gray-800 border-b dark:border-gray-700 hover:bg-row-hover-light dark:hover:bg-row-hover-dark">
+                
+                <td class="px-6 py-4">
+                    <a href="{{ url_for('pagina_detalle_at', tipo_origen=fila.TIPO_ORIGEN, acfi_id=fila.ACFI_ID) }}" class="inline-flex items-center bg-primary hover:bg-primary/90 text-white font-semibold py-1 px-3 rounded-md shadow-sm text-xs transition-colors duration-150">
+                        <span class="material-icons text-sm mr-1">visibility</span>
+                        Ver Detalle
+                    </a>
+                </td>
+
+                <td class="px-6 py-4">{{ fila.ACFI_ID }}</td>
+                <td class="px-6 py-4">{{ fila.UCE }}</td>
+                <td class="px-6 py-4">{{ fila.N_PROGRAMA }}</td>
+                <td class="px-6 py-4">{{ fila.SERVICIO }}</td>
+                
+                <td class="px-6 py-4 font-semibold">
+                    {% if fila.ESTADO == 'CERRADA' or fila.ESTADO == 'Cerrada' %}
+                        <span class="text-red-600 dark:text-red-400">
+                            {{ fila.ESTADO }}
+                        </span>
+                    {% else %}
+                        <span class="text-green-700 dark:text-green-500">
+                            {{ fila.ESTADO }}
+                        </span>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+
+    {% elif resultados is defined and not resultados %}
+        <tr class="bg-white dark:bg-gray-800">
+            <td colspan="7" class="px-6 py-10 text-center text-gray-500">
+                No se encontraron resultados para los filtros ingresados.
+            </td>
+        </tr>
+    {% else %}
+        <tr class="bg-white dark:bg-gray-800">
+            <td colspan="7" class="px-6 py-10 text-center text-gray-500">
+                Ingrese los filtros de búsqueda y presione "Buscar".
+            </td>
+        </tr>
+    {% endif %}
+
+</tbody>
+</table>
+</div>
+
+</div>
+</div>
+</main>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+    // 1. OBTENEMOS LOS ELEMENTOS <select>
+    const selectUCE = document.getElementById('uce');
+    const selectServicio = document.getElementById('servicio');
+
+    // 2. FASE 1: CARGAR UCEs (PADRE) AL INICIAR LA PÁGINA
+    
+    // Llamamos al Endpoint 1
+    fetch('/api/uces')
+        .then(response => response.json())
+        .then(data_uces => {
+            console.log("Capa 1: UCEs recibidas:", data_uces);
+            
+            selectUCE.innerHTML = '<option value="">Seleccione..</option>'; // Opción por defecto
+            
+            // Llenamos el dropdown de UCEs
+            data_uces.forEach(uce => {
+                const option = document.createElement('option');
+                // IMPORTANTE: El 'value' es el ID, el texto es el Nombre
+                option.value = uce.unce_id; 
+                option.textContent = uce.unce_nombre;
+                selectUCE.appendChild(option);
+            });
+        })
+        .catch(error => {
+            console.error('Capa 1: Error al cargar UCEs:', error);
+            selectUCE.innerHTML = '<option value="">Error al cargar UCEs</option>';
+        });
+
+    // 3. FASE 2: "ESCUCHAR" CAMBIOS EN UCE PARA CARGAR SERVICIOS (HIJO)
+    
+    selectUCE.addEventListener('change', function() {
+        
+        // Obtenemos el ID de la UCE seleccionada
+        const uceSeleccionadaId = this.value; 
+        
+        // Limpiamos el dropdown hijo
+        selectServicio.innerHTML = '<option value="">Cargando...</option>';
+        
+        if (uceSeleccionadaId) {
+            // Si el usuario seleccionó una UCE válida...
+            // Llamamos al Endpoint 2, pasando el ID en la URL
+            fetch(`/api/servicios/${uceSeleccionadaId}`)
+                .then(response => response.json())
+                .then(data_servicios => {
+                    console.log("Capa 1: Servicios recibidos:", data_servicios);
+                    
+                    selectServicio.innerHTML = '<option value="">Seleccione..</option>';
+                    
+                    data_servicios.forEach(servicio => {
+                        const option = document.createElement('option');
+                        option.value = servicio.ensv_id;
+                        option.textContent = servicio.ensv_nombre;
+                        selectServicio.appendChild(option);
+                    });
+                })
+                .catch(error => {
+                    console.error('Capa 1: Error al cargar Servicios:', error);
+                    selectServicio.innerHTML = '<option value="">Error al cargar</option>';
+                });
+        } else {
+            // Si el usuario seleccionó "Seleccione.."
+            selectServicio.innerHTML = '<option value="">Seleccione..</option>';
+        }
+    });
+
+    // --- ¡CÓDIGO NUEVO PARA EL BOTÓN LIMPIAR! ---
+    const btnLimpiar = document.getElementById('btn-limpiar');
+    
+    btnLimpiar.addEventListener('click', function() {
+        // Redirige a la misma página, pero sin parámetros de búsqueda.
+        // Esto limpia los filtros y la tabla de resultados.
+        window.location.href = window.location.pathname;
+    });
+
+});
+
+
+</script>
+
+</body></html>

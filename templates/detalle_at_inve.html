@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Detalle Investigación Especial (INVE)</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+    <script> tailwind.config = { theme: { extend: { colors: { primary: '#005a9e', 'navbar-bg': '#B3DAE6', 'navbar-text': '#000066', 'navbar-hover': '#A2CCDB', "background-light": "#f5f5f5", "card-light": "#ffffff", "border-light": "#e2e8f0", "text-light": "#333333" }, fontFamily: { sans: ['Roboto', 'sans-serif'] } } } }; </script>
+</head>
+<body class="bg-background-light font-sans">
+<div class="container mx-auto p-4">
+    <header class="flex justify-between items-center mb-4">
+        <a href="{{ url_for('pagina_buscador_ats', tipo_origen=info.ASTR_TIPO_ORIGEN) }}" class="text-sm text-primary hover:underline flex items-center">
+            <span class="material-icons text-base mr-1">arrow_back</span> Volver a la búsqueda
+        </a>
+        <a href="{{ url_for('pagina_principal') }}" class="text-sm text-primary hover:underline flex items-center">
+            <span class="material-icons text-base mr-1">home</span> Volver al Menú Principal
+        </a>
+    </header>
+    <nav class="bg-primary text-white p-2 rounded-md mb-6">
+        <ul class="flex items-center space-x-4 text-sm">
+            <li><strong class="uppercase">{{ info.ASTR_TIPO_ORIGEN.replace("_", " ") }}</strong> <span class="text-gray-300">&gt;</span></li>
+            <li><span class="font-bold uppercase">DETALLE AT (ACFI: {{ info.ACFI_ID }})</span></li>
+        </ul>
+    </nav>
+
+<main data-acfi-id="{{ info.ACFI_ID }}" data-at-estado="{{ info.ESTADO }}">
+<div class="bg-card-light p-6 rounded-lg shadow-md border border-border-light">
+    {# --- Lógica para validar cierre (INCLUYE TODOS los candados INVE) --- #}
+    {% set all_closed = true %}
+    {% set required_procs = ['1.1', '1.2', '1.3', '1.4', '1.5', '1.6', '1.7', '1.8',
+                             '2.1', '2.2', '2.3', '2.4', '2.5'] %}
+    {% for proc_num in required_procs %}
+        {% set item = actividades.get(proc_num) %}
+        {% if not item or item.estado != 'CERRADO' %} {% set all_closed = false %} {% endif %}
+    {% endfor %}
+    {# --- Fin Lógica --- #}
+    <div class="flex justify-between items-center mb-4 border-t border-border-light pt-4">
+        <h3 class="font-semibold text-lg text-text-light">Información de la Investigación Especial</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-text-light mb-6">
+        <div>
+            <p><strong class="font-medium">Entidad Servicio:</strong> {{ info.SERVICIO or 'N/A' }}</p>
+            <p><strong class="font-medium">Estado:</strong>
+                {% if info.ESTADO == 'CERRADA' or info.ESTADO == 'CERRADO' %}<span class="bg-red-200 text-red-800 px-2 py-1 rounded-full text-xs font-semibold">{{ info.ESTADO }}</span>
+                {% else %}<span class="bg-yellow-200 text-yellow-800 px-2 py-1 rounded-full text-xs font-semibold">{{ info.ESTADO or 'N/A' }}</span>{% endif %}
+            </p>
+            <p><strong class="font-medium">UCE:</strong> {{ info.UCE or 'N/A' }}</p>
+        </div>
+        <div>
+            <p><strong class="font-medium">Tipo Programa:</strong> {{ info.TIPO_PROGRAMA or 'N/A' }}</p>
+            {# MATERIA probablemente no aplica a INVE #}
+        </div>
+        <div>
+            <p><strong class="font-medium">Nº Programa:</strong> {{ info.N_PROGRAMA or 'N/A' }}</p>
+            <p><strong class="font-medium">Nº Informe:</strong> {{ info.N_INFORME or 'N/A' }}</p>
+            <p><strong class="font-medium">Producto publicado:</strong> {{ info.PUBLICADO or 'No' }}</p>
+            <p><strong class="font-medium">Producto con reevaluación:</strong> {{ info.REEVALUACION or 'No' }}</p>
+        </div>
+    </div>
+        
+        {% if info.ESTADO == 'CERRADA' or info.ESTADO == 'CERRADO' %}
+            <button id="btn-actualizar-at"
+                    data-accion-deseada="reabrir"
+                    class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md shadow-md flex items-center text-sm transition-colors duration-150"
+                    title="Reabrir la AT INVE (ASTR y INVE)">
+                <span class="material-icons mr-1">lock_open</span>
+                Reabrir AT INVE
+            </button>
+        {% else %}
+            <button id="btn-actualizar-at"
+                    data-accion-deseada="cerrar"
+                    class="bg-red-600 text-white font-bold py-2 px-4 rounded-md shadow-md flex items-center text-sm
+                           {% if not all_closed %} opacity-50 cursor-not-allowed {% else %} hover:bg-red-700 transition-colors duration-150 {% endif %}"
+                    {% if not all_closed %} disabled title="No se puede cerrar. Aún hay procedimientos abiertos o no iniciados." {% else %} title="Cerrar la AT INVE (ASTR y INVE)" {% endif %}>
+                <span class="material-icons mr-1">lock</span>
+                Cerrar AT INVE
+            </button>
+        {% endif %}
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-text-light mb-6">
+        </div>
+</div>
+
+<div class="mt-8">
+    <h3 class="text-xl font-bold mb-4 text-text-light">Avance de la Investigación Especial (INVE)</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6"> {# Dos columnas para los grupos #}
+
+        <div class="bg-card-light p-4 rounded-lg shadow-md border border-border-light">
+            <h4 class="font-semibold text-center border-b border-border-light pb-2 mb-4 text-text-light">A1: Preparación y actividades de Investigación especial</h4>
+            <div class="grid grid-cols-4 gap-4 text-center text-sm px-4"> {# 4 columnas por fila #}
+                {% set grupo1_procs = ['1.1', '1.2', '1.3', '1.4', '1.5', '1.6', '1.7', '1.8'] %}
+                {% for proc_num in grupo1_procs %}
+                <div>
+                    <p class="mb-2 text-text-light">{{ proc_num }}</p>
+                    {% set item = actividades.get(proc_num) %}
+                    {% if item and item.estado == 'CERRADO' %}
+                        <span class="material-icons text-red-600 cursor-pointer hover:opacity-75 clickable-lock" data-proc-id="{{ item.id }}" data-proc-nombre="{{ proc_num }}" data-accion-deseada="reabrir" title="Reabrir {{ proc_num }}">lock</span>
+                    {% elif item and item.estado == 'ABIERTO' %}
+                        <span class="material-icons text-green-600 cursor-pointer hover:opacity-75 clickable-lock" data-proc-id="{{ item.id }}" data-proc-nombre="{{ proc_num }}" data-accion-deseada="cerrar" title="Cerrar {{ proc_num }}">lock_open</span>
+                    {% else %}
+                        <span class="material-icons text-yellow-500" title="No iniciado">lock_clock</span>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="bg-card-light p-4 rounded-lg shadow-md border border-border-light">
+            <h4 class="font-semibold text-center border-b border-border-light pb-2 mb-4 text-text-light">A2: Cierre de la revisión</h4>
+            <div class="grid grid-cols-4 gap-4 text-center text-sm px-4"> {# 4 columnas por fila #}
+                {% set grupo2_procs = ['2.1', '2.2', '2.3', '2.4', '2.5'] %}
+                {% for proc_num in grupo2_procs %}
+                <div>
+                    <p class="mb-2 text-text-light">{{ proc_num }}</p>
+                    {% set item = actividades.get(proc_num) %}
+                    {% if item and item.estado == 'CERRADO' %}
+                        <span class="material-icons text-red-600 cursor-pointer hover:opacity-75 clickable-lock" data-proc-id="{{ item.id }}" data-proc-nombre="{{ proc_num }}" data-accion-deseada="reabrir" title="Reabrir {{ proc_num }}">lock</span>
+                    {% elif item and item.estado == 'ABIERTO' %}
+                        <span class="material-icons text-green-600 cursor-pointer hover:opacity-75 clickable-lock" data-proc-id="{{ item.id }}" data-proc-nombre="{{ proc_num }}" data-accion-deseada="cerrar" title="Cerrar {{ proc_num }}">lock_open</span>
+                    {% else %}
+                        <span class="material-icons text-yellow-500" title="No iniciado">lock_clock</span>
+                    {% endif %}
+                </div>
+                {% endfor %}
+                 {# Relleno para alinear si son menos de 4 #}
+                 {% for i in range(4 - grupo2_procs|length) %}<div></div>{% endfor %}
+            </div>
+        </div>
+
+        {% if not actividades and required_procs %}
+             <p class="text-gray-500 text-center col-span-full mt-4">No se encontraron procedimientos para esta AT.</p>
+        {% endif %}
+    </div>
+</div>
+</main>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const mainEl = document.querySelector('main');
+    const acfi_id = mainEl.dataset.acfiId;
+    const at_estado = mainEl.dataset.atEstado;
+
+    // --- Lógica Click Candado (Llama a API INVE) ---
+    const candados = document.querySelectorAll('.clickable-lock');
+    candados.forEach(function(candado) {
+        candado.addEventListener('click', function() {
+            const proc_id = this.dataset.procId; // PROC_ID real
+            const proc_nombre = this.dataset.procNombre; // '1.1', etc.
+            const accionDeseada = this.dataset.accionDeseada;
+            if (at_estado == 'CERRADO' && accionDeseada == 'reabrir') { /* ... */ return; }
+            let nuevoEstado = (accionDeseada === 'reabrir') ? 'ABIERTO' : 'CERRADO';
+            const mensajeConfirm = `¿Está seguro que desea ${accionDeseada} el procedimiento ${proc_nombre}?`;
+            if (confirm(mensajeConfirm)) {
+                // *** LLAMA A LA NUEVA API DE PROCEDIMIENTOS INVE ***
+                ejecutarActualizacion('/api/actualizar-procedimiento-inve', { acfi_id: acfi_id, proc_id: proc_id, nuevo_estado: nuevoEstado });
+            }
+        });
+    });
+
+    // --- Lógica Click Botón AT (Llama a API INVE) ---
+    const btnActualizarAT = document.getElementById('btn-actualizar-at');
+    if (btnActualizarAT) {
+        btnActualizarAT.addEventListener('click', function() {
+            const accion = this.dataset.accionDeseada;
+            const mensajeConfirm = `¿Está seguro que desea ${accion} la AT INVE completa?`;
+            if (confirm(mensajeConfirm)) {
+                // *** LLAMA A LA NUEVA API DE AT COMPLETA INVE ***
+                ejecutarActualizacion('/api/actualizar-at-completa-inve', { acfi_id: acfi_id, accion: accion });
+            }
+        });
+    }
+
+    // --- Función Genérica Llamada API (Sin cambios) ---
+    function ejecutarActualizacion(apiUrl, bodyData) {
+      console.log(`Llamando a API: ${apiUrl} con datos:`, bodyData); // Log para depurar
+      fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(bodyData)
+      })
+      .then(response => {
+          // Primero, verificar si la respuesta fue exitosa (status 200-299)
+          if (!response.ok) {
+              // Si no fue exitosa, intentar leer el mensaje de error del JSON si existe
+              return response.json().then(errData => {
+                  throw new Error(errData.message || `Error del servidor: ${response.status}`);
+              }).catch(() => {
+                  // Si no hay JSON o falla al leerlo, lanzar error genérico
+                  throw new Error(`Error del servidor: ${response.status}`);
+              });
+          }
+          // Si fue exitosa, procesar el JSON
+          return response.json();
+      })
+      .then(data => {
+          if (data.success) {
+              alert(`¡Éxito! ${data.message}`);
+              // --- Refresco Inteligente ---
+              const actoSeleccionado = document.querySelector('.acto-seleccionable.bg-blue-100, .acto-termino-seleccionable.bg-blue-100'); // Buscar en ambas listas
+              if (actoSeleccionado) {
+                  const tipoActo = actoSeleccionado.classList.contains('acto-seleccionable') ? 'normal' : 'termino';
+                  const idActo = tipoActo === 'normal' ? actoSeleccionado.dataset.tiacId : actoSeleccionado.dataset.aafiId;
+
+                  if (tipoActo === 'normal' && apiUrl === '/api/actualizar-actuaciones-siad') {
+                      // Refrescar tabla normal llamando a la API de registros TIAC de nuevo
+                       console.log("Refrescando tabla normal...");
+                       seleccionarActo(actoSeleccionado, idActo, 'normal');
+                  } else if (tipoActo === 'termino' && apiUrl === '/api/actualizar-actos-termino-siad'){
+                      // Refrescar lista principal reenviando formulario búsqueda
+                      const formBusqueda = document.querySelector('form[method="POST"]');
+                      const inputBusqueda = document.getElementById('proceso_caso');
+                      if (formBusqueda && inputBusqueda && inputBusqueda.value) {
+                           console.log("Refrescando por re-submit del formulario (Termino)...");
+                           formBusqueda.submit(); // Re-envía el formulario para recargar ambas listas
+                      } else {
+                           console.log("Refrescando por location.reload() (Termino)...");
+                           location.reload(); // Fallback: recargar toda la página
+                      }
+                  } else {
+                      // Si la API llamada no coincide con el tipo seleccionado (ej. actualizó proc ARA)
+                      // o si no se encontró acto seleccionado, recargar la página es lo más seguro.
+                      console.log("Refrescando por location.reload() (Fallback)...");
+                      location.reload();
+                  }
+              } else {
+                  console.log("No se encontró acto seleccionado, refrescando por location.reload()...");
+                  location.reload();
+              }
+          } else {
+              // Mostrar mensaje de error específico devuelto por la API
+              alert('Error: No se pudo actualizar.\n' + (data.message || 'Error desconocido del servidor.'));
+          }
+      })
+      .catch(error => {
+          // Capturar errores de red o errores lanzados desde .then(response => ...)
+          console.error('Error en fetch o procesamiento:', error);
+          alert('Error de conexión o procesamiento: ' + error.message);
+      });
+  }
+});
+</script>
+
+</body>
+</html>

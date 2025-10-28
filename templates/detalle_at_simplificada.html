@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Detalle Auditoría Simplificada</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+        theme: { extend: { colors: { primary: '#005a9e', 'navbar-bg': '#B3DAE6', 'navbar-text': '#000066', 'navbar-hover': '#A2CCDB', "background-light": "#f5f5f5", "card-light": "#ffffff", "border-light": "#e2e8f0", "text-light": "#333333" }, fontFamily: { sans: ['Roboto', 'sans-serif'] } } } };
+</script>
+</head>
+
+<body class="bg-background-light font-sans">
+<div class="container mx-auto p-4">
+
+<header class="flex justify-between items-center mb-4">
+   <a href="{{ url_for('pagina_buscador_ats', tipo_origen=info.ASTR_TIPO_ORIGEN) }}" class="text-sm text-primary dark:text-blue-400 hover:underline flex items-center">
+        <span class="material-icons text-base mr-1">arrow_back</span>
+        Volver a la búsqueda
+    </a>
+    <a href="{{ url_for('pagina_principal') }}" class="text-sm text-primary hover:underline flex items-center">
+        <span class="material-icons text-base mr-1">home</span>
+        Volver al Menú Principal
+    </a>
+</header>
+<nav class="bg-primary text-white p-2 rounded-md mb-6">
+    <ul class="flex items-center space-x-4 text-sm">
+        <li><strong class="uppercase">{{ info.ASTR_TIPO_ORIGEN.replace("_", " ") }}</strong> <span class="text-gray-300">&gt;</span></li>
+        <li><span class="font-bold uppercase">DETALLE AT (ACFI: {{ info.ACFI_ID }})</span></li>
+    </ul>
+</nav>
+
+<main data-acfi-id="{{ info.ACFI_ID }}" data-at-estado="{{ info.ESTADO }}">
+<div class="bg-card-light p-6 rounded-lg shadow-md border border-border-light">
+
+    {% set all_closed = true %}
+    {% set required_procs = ['1.1', '1.2', '1.3', '1.4', '1.5', '1.6', '1.7'] %} {# <-- Lista ajustada #}
+    {% for proc_num in required_procs %}
+        {% set item = actividades.get(proc_num) %}
+        {% if not item or item.estado != 'CERRADO' %}
+            {% set all_closed = false %}
+        {% endif %}
+    {% endfor %}
+
+    <div class="flex justify-between items-center mb-4 border-t border-border-light pt-4">
+        <h3 class="font-semibold text-lg text-text-light">Información de la Auditoría</h3>
+        {% if info.ESTADO == 'CERRADA' or info.ESTADO == 'CERRADO' %}
+            <button id="btn-actualizar-at" data-accion-deseada="reabrir"
+                    class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md shadow-md flex items-center text-sm">
+                <span class="material-icons mr-1">lock_open</span> Reabrir AT Simplificada
+            </button>
+        {% else %}
+            <button id="btn-actualizar-at" data-accion-deseada="cerrar"
+                    class="bg-red-600 text-white font-bold py-2 px-4 rounded-md shadow-md flex items-center text-sm
+                           {% if not all_closed %} opacity-50 cursor-not-allowed {% else %} hover:bg-red-700 {% endif %}"
+                    {% if not all_closed %} disabled title="No se puede cerrar. Aún hay procedimientos abiertos o no iniciados." {% else %} title="Cerrar la AT Simplificada" {% endif %}>
+                <span class="material-icons mr-1">lock</span> Cerrar AT Simplificada
+            </button>
+        {% endif %}
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-text-light mb-6">
+        <div>
+            <p><strong class="font-medium">Entidad Servicio:</strong> {{ info.SERVICIO or 'N/A' }}</p>
+            <p><strong class="font-medium">Estado:</strong>
+                {% if info.ESTADO == 'CERRADA' or info.ESTADO == 'CERRADO' %}<span class="bg-red-200 text-red-800 px-2 py-1 rounded-full text-xs font-semibold">{{ info.ESTADO }}</span>
+                {% else %}<span class="bg-yellow-200 text-yellow-800 px-2 py-1 rounded-full text-xs font-semibold">{{ info.ESTADO or 'N/A' }}</span>{% endif %}
+            </p>
+            <p><strong class="font-medium">UCE:</strong> {{ info.UCE or 'N/A' }}</p>
+        </div>
+        <div>
+            <p><strong class="font-medium">Tipo Programa:</strong> {{ info.TIPO_PROGRAMA or 'N/A' }}</p>
+        </div>
+        <div>
+            <p><strong class="font-medium">Nº Programa:</strong> {{ info.N_PROGRAMA or 'N/A' }}</p>
+            <p><strong class="font-medium">Nº Informe:</strong> {{ info.N_INFORME or 'N/A' }}</p>
+            <p><strong class="font-medium">Producto publicado:</strong> {{ info.PUBLICADO or 'No' }}</p>
+            <p><strong class="font-medium">Producto con reevaluación:</strong> {{ info.REEVALUACION or 'No' }}</p>
+        </div>
+    </div>
+</div>
+
+<div class="mt-8">
+    <h3 class="text-xl font-bold mb-4 text-text-light">Avance de la Auditoría Simplificada</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6"> <div class="bg-card-light p-4 rounded-lg shadow-md border border-border-light">
+            <h4 class="font-semibold text-center border-b border-border-light pb-2 mb-4 text-text-light">Procedimientos Principales</h4>
+            <div class="grid grid-cols-4 sm:grid-cols-7 gap-4 text-center text-sm px-4"> {# <-- Grid de 7 columnas en pantallas medianas+ #}
+
+                {% for proc_num in required_procs %}
+                <div>
+                    <p class="mb-2 text-text-light">{{ proc_num }}</p>
+                    {# Obtenemos el item del mapa 'actividades' #}
+                    {% set item = actividades.get(proc_num) %}
+                    {% if item and item.estado == 'CERRADO' %}
+                        <span class="material-icons text-red-600 cursor-pointer hover:opacity-75 clickable-lock"
+                              data-proc-id="{{ item.id }}" data-proc-nombre="{{ proc_num }}" data-accion-deseada="reabrir" title="Reabrir {{ proc_num }}">lock</span>
+                    {% elif item and item.estado == 'ABIERTO' %}
+                        <span class="material-icons text-green-600 cursor-pointer hover:opacity-75 clickable-lock"
+                              data-proc-id="{{ item.id }}" data-proc-nombre="{{ proc_num }}" data-accion-deseada="cerrar" title="Cerrar {{ proc_num }}">lock_open</span>
+                    {% else %} {# Si no existe (amarillo) #}
+                        <span class="material-icons text-yellow-500" title="No iniciado">lock_clock</span>
+                    {% endif %}
+                </div>
+                {% endfor %}
+
+            </div>
+        </div>
+
+        {# Mensaje si no se encontraron procedimientos #}
+        {% if not actividades and required_procs %}
+             <p class="text-gray-500 text-center col-span-full">No se encontraron procedimientos para esta AT.</p>
+        {% endif %}
+
+    </div>
+</div>
+</main>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const mainEl = document.querySelector('main');
+    const acfi_id = mainEl.dataset.acfiId;
+    const at_estado = mainEl.dataset.atEstado;
+
+    // --- Lógica Click Candado ---
+    const candados = document.querySelectorAll('.clickable-lock');
+    candados.forEach(function(candado) {
+        candado.addEventListener('click', function() {
+            const proc_id = this.dataset.procId;
+            const proc_nombre = this.dataset.procNombre;
+            const accionDeseada = this.dataset.accionDeseada;
+            if (at_estado == 'CERRADO' && accionDeseada == 'reabrir') {
+                alert('Error: No se puede reabrir un procedimiento.\nLa AT principal está CERRADA.\nDebe "Reabrir AT Completa" primero.');
+                return;
+            }
+            let nuevoEstado = (accionDeseada === 'reabrir') ? 'ABIERTO' : 'CERRADO';
+            const mensajeConfirm = `¿Está seguro que desea ${accionDeseada} el procedimiento ${proc_nombre}?`;
+            if (confirm(mensajeConfirm)) {
+                ejecutarActualizacion('/api/actualizar-procedimiento', { acfi_id: acfi_id, proc_id: proc_id, nuevo_estado: nuevoEstado });
+            }
+        });
+    });
+
+    // --- Lógica Click Botón AT ---
+    const btnActualizarAT = document.getElementById('btn-actualizar-at');
+    if (btnActualizarAT) {
+        btnActualizarAT.addEventListener('click', function() {
+            const accion = this.dataset.accionDeseada;
+            const mensajeConfirm = `¿Está seguro que desea ${accion} la AT completa?\nEsta acción ejecutará las dos queries (ASTR y LIAU).`;
+            if (confirm(mensajeConfirm)) {
+                ejecutarActualizacion('/api/actualizar-at-completa', { acfi_id: acfi_id, accion: accion });
+            }
+        });
+    }
+
+    // --- Función Genérica Llamada API ---
+    function ejecutarActualizacion(apiUrl, bodyData) {
+        fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(bodyData) })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) { alert('¡Éxito! Actualización realizada.'); location.reload(); }
+            else { alert('Error: No se pudo actualizar.\n' + data.message); }
+        })
+        .catch(error => { console.error('Error en fetch:', error); alert('Error de conexión.'); });
+    }
+});
+</script>
+
+</body>
+</html>

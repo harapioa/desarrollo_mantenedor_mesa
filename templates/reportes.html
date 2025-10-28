@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Módulo de Reportes</title>
+
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                colors: {
+                    primary: '#005a9e',
+                    'navbar-bg': '#B3DAE6', // Tu celeste
+                    'navbar-text': '#000066', // Tu azul oscuro
+                    'navbar-hover': '#A2CCDB',
+                    "background-light": "#f5f5f5",
+                    "card-light": "#ffffff",
+                    "border-light": "#e2e8f0",
+                    "text-light": "#333333",
+                },
+                fontFamily: {
+                    sans: ['Roboto', 'sans-serif'],
+                },
+            },
+        },
+    };
+</script>
+</head>
+
+<body class="bg-background-light font-sans">
+
+<div class="bg-navbar-bg flex justify-between items-center py-2 px-10">
+  
+  <div class="text-lg font-medium text-navbar-text">
+    <a href="{{ url_for('pagina_principal') }}" class="text-navbar-text no-underline font-bold">Mesa de Servicio</a>
+    <span class="font-normal opacity-80"> / </span>
+    <span class="font-normal">Reportes</span>
+  </div>
+
+  <a href="{{ url_for('pagina_principal') }}" class="text-navbar-text no-underline text-sm font-bold flex items-center py-2 px-3 rounded hover:bg-navbar-hover">
+    <span class="material-icons text-xl align-middle mr-1">arrow_back</span>
+    Volver al Inicio
+  </a>
+
+</div>
+<div class="h-1 bg-navbar-bg"></div>
+
+
+<div class="container mx-auto p-6 max-w-4xl">
+  <h1 class="text-3xl font-bold text-primary mb-6 text-center">Descarga de Reportes</h1>
+  
+  <div class="flex flex-col gap-4">
+
+    <div class="flex justify-between items-center p-5 bg-card-light rounded-lg shadow border border-border-light">
+      <p class="text-base text-text-light">Casos PD Entidad v1.0</p>
+      <button class="download-btn bg-primary hover:bg-primary/90 text-white font-semibold py-2 px-4 rounded-md shadow-sm flex items-center text-sm"
+              data-report-id="casos_pd_entidad" 
+              data-filename="Casos PD Entidad v1.0">
+        <span class="material-icons text-lg mr-1">download</span>
+        Descargar
+      </button>
+    </div>
+
+    <div class="flex justify-between items-center p-5 bg-card-light rounded-lg shadow border border-border-light">
+      <p class="text-base text-text-light">Productos no vinculados v1.0</p>
+      <button class="download-btn bg-primary hover:bg-primary/90 text-white font-semibold py-2 px-4 rounded-md shadow-sm flex items-center text-sm"
+              data-report-id="productos_no_vinculados" 
+              data-filename="Productos no vinculados v1.0">
+        <span class="material-icons text-lg mr-1">download</span>
+        Descargar
+      </button>
+    </div>
+
+    <div class="flex justify-between items-center p-5 bg-card-light rounded-lg shadow border border-border-light">
+      <p class="text-base text-text-light">Reporte PDs y fechas resoluciones Nacional Materias</p>
+      <button class="download-btn bg-primary hover:bg-primary/90 text-white font-semibold py-2 px-4 rounded-md shadow-sm flex items-center text-sm"
+              data-report-id="pd_fechas_resoluciones" 
+              data-filename="Reporte PDs y fechas resoluciones Nacional Materias">
+        <span class="material-icons text-lg mr-1">download</span>
+        Descargar
+      </button>
+    </div>
+
+    <div class="flex justify-between items-center p-5 bg-card-light rounded-lg shadow border border-border-light">
+      <p class="text-base text-text-light">Reporte actos totales casos siad v1.4</p>
+      <button class="download-btn bg-primary hover:bg-primary/90 text-white font-semibold py-2 px-4 rounded-md shadow-sm flex items-center text-sm"
+              data-report-id="actos_totales_siad" 
+              data-filename="Reporte actos totales casos siad v1.4">
+        <span class="material-icons text-lg mr-1">download</span>
+        Descargar
+      </button>
+    </div>
+    
+  </div>
+</div>
+
+<div id="loading-modal" class="hidden fixed inset-0 z-50 bg-black/50 justify-center items-center">
+  <div class="bg-white p-8 rounded-lg shadow-xl text-center">
+    <div class="w-12 h-12 border-4 border-gray-200 border-t-primary rounded-full animate-spin mx-auto"></div>
+    <p class="text-lg font-semibold text-text-light mt-4">Generando reporte... <br>Esto puede tardar unos segundos.</p>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const modal = document.getElementById('loading-modal');
+  const buttons = document.querySelectorAll('.download-btn');
+
+  buttons.forEach(function(button) {
+    button.addEventListener('click', function() {
+      
+      const reportId = this.dataset.reportId;
+      const baseFileName = this.dataset.filename;
+
+      // 1. Mostrar el modal de "Cargando"
+      modal.classList.remove('hidden');
+      modal.classList.add('flex'); // Cambiamos de 'none' a 'flex'
+
+      // 2. Llamar a la API
+      fetch(`/api/download-report/${reportId}`)
+        .then(response => {
+          if (!response.ok) {
+             throw new Error('Error del servidor al generar el reporte.');
+          }
+          const header = response.headers.get('Content-Disposition');
+          const filename = header ? header.split('filename=')[1] : `${baseFileName}.xlsx`;
+          
+          return response.blob().then(blob => ({ blob, filename }));
+        })
+        .then(({ blob, filename }) => {
+          // 3. Crear el enlace de descarga
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.style.display = 'none';
+          a.href = url;
+          a.download = filename;
+          document.body.appendChild(a);
+          a.click();
+          
+          // 4. Limpiar y ocultar
+          window.URL.revokeObjectURL(url);
+          a.remove();
+          modal.classList.add('hidden');
+          modal.classList.remove('flex');
+        })
+        .catch(error => {
+          // 5. Manejar error
+          console.error('Error en la descarga:', error);
+          modal.classList.add('hidden');
+          modal.classList.remove('flex');
+          alert('Error al generar el reporte. Revise la consola para más detalles.');
+        });
+    });
+  });
+});
+</script>
+
+</body>
+</html>
