@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Detalle Atención Referencia (ARA)</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+    <script> tailwind.config = { theme: { extend: { colors: { primary: '#005a9e', 'navbar-bg': '#B3DAE6', 'navbar-text': '#000066', 'navbar-hover': '#A2CCDB', "background-light": "#f5f5f5", "card-light": "#ffffff", "border-light": "#e2e8f0", "text-light": "#333333" }, fontFamily: { sans: ['Roboto', 'sans-serif'] } } } }; </script>
+</head>
+<body class="bg-background-light font-sans">
+<div class="container mx-auto p-4">
+    <header class="flex justify-between items-center mb-4">
+        <a href="{{ url_for('pagina_buscador_ats', tipo_origen=info.ASTR_TIPO_ORIGEN) }}" class="text-lg text-primary hover:underline flex items-center">
+            <span class="material-icons text-base mr-1">arrow_back</span> Volver a la búsqueda
+        </a>
+            <a href="{{ url_for('pagina_principal') }}" class="text-lg text-primary dark:text-blue-400 hover:underline flex items-center">
+            <span class="material-icons text-base mr-1">home</span>
+            Volver al Menú Principal
+        </a>
+    </header>
+    <nav class="bg-primary text-white p-2 rounded-md mb-6">
+        <ul class="flex items-center space-x-4 text-sm">
+            <li><strong class="uppercase">{{ info.ASTR_TIPO_ORIGEN.replace("_", " ") }}</strong> <span class="text-gray-300">&gt;</span></li>
+            <li><span class="font-bold uppercase">DETALLE AT (ACFI: {{ info.ACFI_ID }})</span></li>
+        </ul>
+    </nav>
+
+<main data-acfi-id="{{ info.ACFI_ID }}"
+      data-at-estado="{{ info.ESTADO }}"
+      data-tipo-origen="{{ info.ASTR_TIPO_ORIGEN or '' }}"
+      data-uce-id="{{ info.UCE_ID or info.UNCE_ID or request.args.get('uce_id') or request.args.get('UCE_ID') or '' }}"
+      data-servicio-id="{{ info.ENSV_ID or info.SERVICIO_ID or request.args.get('ensv_id') or request.args.get('ENSV_ID') or '' }}">
+    {# Valor oculto con UCE_ID (viene desde buscador_generico) para uso desde JS #}
+    <input type="hidden" id="uce-id-hidden" value="{{ info.UCE_ID or info.UNCE_ID or request.args.get('uce_id') or request.args.get('UCE_ID') or '' }}">
+<div class="bg-card-light p-6 rounded-lg shadow-md border border-border-light">
+    {% set all_closed = true %}
+    {% set required_procs = ['1.1', '1.2', '1.3', '1.4', '1.5', '1.6', '1.7'] %}
+    {% for proc_num in required_procs %}
+        {% set item = actividades.get(proc_num) %}
+        {% if not item or item.estado != 'CERRADO' %} {% set all_closed = false %} {% endif %}
+    {% endfor %}
+    
+    <div class="flex justify-between items-center mb-4 border-t border-border-light pt-4">
+        <h3 class="font-semibold text-lg text-text-light">Información de la Atención Referencia</h3>
+
+        <div>
+            {# --- Bloque del Botón (Reabrir/Cerrar) --- #}
+        {% set all_closed = true %} {# Asumiendo que esta lógica está antes #}
+
+        <div class="flex items-center gap-3">
+            {% if info.ESTADO == 'CERRADA' or info.ESTADO == 'CERRADO' %}
+                {# Botón REABRIR (Verde) #}
+                <button id="btn-actualizar-at"
+                        data-accion-deseada="reabrir"
+                        class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md shadow-md flex items-center justify-center text-sm transition-colors duration-150 min-w-[160px]"
+                        title="Reabrir la AT ARA (ASTR y ARA)">
+                    <span class="material-icons mr-2">lock_open</span>
+                    Reabrir AT ARA
+                </button>
+            {% else %}
+                {# Botón CERRAR (Rojo) - Habilitado/Deshabilitado #}
+                <button id="btn-actualizar-at"
+                        data-accion-deseada="cerrar"
+                        class="bg-red-600 text-white font-bold py-2 px-4 rounded-md shadow-md flex items-center justify-center text-sm
+                               {% if not all_closed %} opacity-50 cursor-not-allowed {% else %} hover:bg-red-700 transition-colors duration-150 {% endif %} min-w-[160px]"
+                        {% if not all_closed %} disabled title="No se puede cerrar. Aún hay procedimientos abiertos o no iniciados." {% else %} title="Cerrar la AT ARA (ASTR y ARA)" {% endif %}>
+                    <span class="material-icons mr-2">lock</span>
+                    Cerrar AT ARA
+                </button>
+            {% endif %}
+
+            {# --- Nuevo botón: Cambiar servicio --- #}
+            <button id="btn-cambiar-servicio" type="button"
+                    class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md shadow-md flex items-center justify-center text-sm transition-colors duration-150 min-w-[160px]"
+                    title="Cambiar servicio">
+                <span class="material-icons mr-2">swap_horiz</span>
+                Cambiar servicio
+            </button>
+        </div>
+
+        {# --- FIN Botón Cambiar servicio --- #}
+        </div>
+
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-text-light mb-6">
+        <div>
+            <p><strong class="font-medium">Entidad Servicio:</strong> {{ info.SERVICIO or 'N/A' }}</p>
+            <p><strong class="font-medium">Estado:</strong>
+                {% if info.ESTADO == 'CERRADA' or info.ESTADO == 'CERRADO' %}<span class="bg-red-200 text-red-800 px-2 py-1 rounded-full text-xs font-semibold">{{ info.ESTADO }}</span>
+                {% else %}<span class="bg-yellow-200 text-yellow-800 px-2 py-1 rounded-full text-xs font-semibold">{{ info.ESTADO or 'N/A' }}</span>{% endif %}
+            </p>
+            <p><strong class="font-medium">UCE:</strong> {{ info.UCE or 'N/A' }}</p>
+        </div>
+        <div>
+            <p><strong class="font-medium">Tipo Programa:</strong> {{ info.TIPO_PROGRAMA or 'N/A' }}</p>
+            {# <p><strong class="font-medium">Materia:</strong> {{ info.MATERIA or 'N/A' }}</p> #}
+        </div>
+        <div>
+            <p><strong class="font-medium">Nº Programa:</strong> {{ info.N_PROGRAMA or 'N/A' }}</p>
+            <p><strong class="font-medium">Nº Informe:</strong> {{ info.N_INFORME or 'N/A' }}</p>
+            <p><strong class="font-medium">Producto publicado:</strong> {{ info.PUBLICADO or 'No' }}</p>
+            <p><strong class="font-medium">Producto con reevaluación:</strong> {{ info.REEVALUACION or 'No' }}</p>
+        </div>
+        
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-text-light mb-6">
+        </div>
+</div>
+  
+<div class="mt-8">
+    <h3 class="text-xl font-bold mb-4 text-text-light">Avance de la Atención Referencia (ARA)</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6">
+        <div class="bg-card-light p-4 rounded-lg shadow-md border border-border-light">
+            <h4 class="font-semibold text-center border-b border-border-light pb-2 mb-4 text-text-light">Procedimientos ARA</h4>
+            <div class="grid grid-cols-4 sm:grid-cols-7 gap-4 text-center text-sm px-4">
+                {% for proc_num in required_procs %}
+                <div>
+                    <p class="mb-2 text-text-light">{{ proc_num }}</p>
+                    {% set item = actividades.get(proc_num) %}
+                    {% if item and item.estado == 'CERRADO' %}
+                        <span class="material-icons text-red-600 cursor-pointer hover:opacity-75 clickable-lock"
+                              data-proc-id="{{ item.id }}" data-proc-nombre="{{ proc_num }}" data-accion-deseada="reabrir" title="Reabrir {{ proc_num }}">lock</span>
+                    {% elif item and item.estado == 'ABIERTO' %}
+                        <span class="material-icons text-green-600 cursor-pointer hover:opacity-75 clickable-lock"
+                              data-proc-id="{{ item.id }}" data-proc-nombre="{{ proc_num }}" data-accion-deseada="cerrar" title="Cerrar {{ proc_num }}">lock_open</span>
+                    {% else %}
+                        <span class="material-icons text-yellow-500" title="No iniciado">lock_clock</span>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% if not actividades and required_procs %}
+             <p class="text-gray-500 text-center col-span-full">No se encontraron procedimientos para esta AT.</p>
+        {% endif %}
+    </div>
+
+    
+        <!-- Contenedor oculto para cambio de servicio -->
+        <div id="cambio-servicio-container" class="bg-card-light p-4 rounded-md border border-border-light mt-4 hidden">
+            <h3 class="text-lg font-semibold mb-3">Cambio de servicio</h3>
+
+            <div class="mb-3">
+                <label class="block text-gray-600 dark:text-gray-300 mb-1" for="servicio">Servicio:</label>
+                <select class="w-full bg-white dark:bg-gray-600 border border-border-light dark:border-border-dark rounded-md shadow-sm p-2 focus:ring-primary focus:border-primary" id="servicio" name="servicio">
+                    <option value="">Seleccione..</option>
+                </select>
+            </div>
+
+            <div class="flex justify-end">
+                <button id="btn-acepta-cambio" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md shadow-md text-sm">
+                    ACEPTA
+                </button>
+            </div>
+        </div>
+
+</div>
+</main>
+</div>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const mainEl = document.querySelector('main');
+    if (!mainEl) return;
+
+    const acfiId = mainEl.dataset.acfiId || '';
+    const atEstado = mainEl.dataset.atEstado || '';
+    const tipoOrigen = mainEl.dataset.tipoOrigen || '';
+    
+    // Fallback hidden input si main.dataset no contiene UCE
+    const uceHidden = document.getElementById('uce-id-hidden');
+    const uceHiddenVal = uceHidden ? uceHidden.value : '';
+
+    console.log("=== DETALLE ARA: Inicialización ===");
+    console.log("ACFI_ID:", acfiId);
+    console.log("AT_ESTADO:", atEstado);
+    console.log("TIPO_ORIGEN:", tipoOrigen);
+    console.log("UCE_ID (hidden):", uceHiddenVal);
+    console.log("main.dataset completo:", JSON.stringify(mainEl.dataset));
+
+    // ===============================================
+    // FUNCIÓN GENÉRICA: Ejecutar Actualización
+    // ===============================================
+    /**
+     * Función genérica para llamar a APIs de actualización
+     * @param {string} apiUrl - URL del endpoint (ej: '/api/actualizar-at-completa-ara')
+     * @param {object} bodyData - Datos a enviar en el body
+     * @param {string} mensajeExito - Mensaje a mostrar si la operación es exitosa (opcional)
+     */
+    function ejecutarActualizacion(apiUrl, bodyData, mensajeExito = null) {
+        console.log("\n=== INICIO: ejecutarActualizacion ===");
+        console.log("1. apiUrl:", apiUrl);
+        console.log("2. bodyData:", bodyData);
+        console.log("3. mensajeExito:", mensajeExito);
+
+        // Validación básica
+        if (!apiUrl) {
+            console.error("ERROR: apiUrl no proporcionada");
+            alert("Error: URL de API no válida.");
+            return;
+        }
+
+        if (!bodyData || typeof bodyData !== 'object') {
+            console.error("ERROR: bodyData no es un objeto válido");
+            alert("Error: Datos inválidos.");
+            return;
+        }
+
+        console.log("4. Datos validados correctamente");
+        console.log("5. Enviando solicitud fetch...");
+
+        // Realizar la solicitud
+        fetch(apiUrl, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(bodyData)
+        })
+        .then(response => {
+            console.log("6. Respuesta recibida. Status:", response.status);
+            console.log("7. Headers:", response.headers);
+
+            if (!response.ok) {
+                console.error("ERROR HTTP:", response.status, response.statusText);
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+
+            return response.json();
+        })
+        .then(data => {
+            console.log("8. JSON parseado:", data);
+
+            if (data.success) {
+                console.log("9. ¡Operación exitosa!");
+                
+                // Mostrar mensaje personalizado o genérico
+                const mensaje = mensajeExito || data.message || "¡Operación realizada exitosamente!";
+                console.log("10. Mensaje a mostrar:", mensaje);
+                
+                alert(mensaje);
+                
+                console.log("11. Recargando página en 500ms...");
+                setTimeout(() => {
+                    location.reload();
+                }, 500);
+            } else {
+                console.log("12. Operación fallida. Error:", data.message);
+                alert('Error: ' + (data.message || 'Error desconocido'));
+            }
+        })
+        .catch(error => {
+            console.error('13. Error en fetch:', error);
+            console.error('14. Stack trace:', error.stack);
+            alert('Error al realizar la operación: ' + error.message);
+        })
+        .finally(() => {
+            console.log("=== FIN: ejecutarActualizacion ===\n");
+        });
+    }
+
+    // Elementos para "Cambio de servicio"
+    const btnCambiar = document.getElementById('btn-cambiar-servicio');
+    const contCambio = document.getElementById('cambio-servicio-container');
+    const selectServicio = document.getElementById('servicio');
+
+    console.log("Debug elementos: btnCambiar=", !!btnCambiar, " contCambio=", !!contCambio, " selectServicio=", !!selectServicio);
+
+    const currentServicioName = "{{ info.SERVICIO|e }}";
+    const currentServicioId = "{{ info.ENSV_ID or info.SERVICIO_ID or '' }}";
+
+    // Función para cargar servicios según UCE_ID
+    function loadServiciosForUce() {
+        // Intenta obtener UCE desde dataset, fallback a input oculto
+        const uceId = mainEl.dataset.uceId || mainEl.dataset.unceId || uceHiddenVal || '';
+        console.log("loadServiciosForUce() llamado. ACFI_ID:", acfiId, " UCE_ID:", uceId);
+
+        if (!selectServicio) return;
+        selectServicio.innerHTML = '<option value="">Cargando servicios...</option>';
+
+        if (!uceId) {
+            selectServicio.innerHTML = '<option value="">UCE no disponible</option>';
+            return;
+        }
+
+        fetch(`/api/servicios/${uceId}`)
+            .then(resp => {
+                if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                return resp.json();
+            })
+            .then(data_servicios => {
+                console.log("Servicios recibidos:", data_servicios);
+                selectServicio.innerHTML = '<option value="">Seleccione..</option>';
+
+                if (!Array.isArray(data_servicios) || data_servicios.length === 0) {
+                    selectServicio.innerHTML = '<option value="">No hay servicios para esta UCE</option>';
+                    return;
+                }
+
+                data_servicios.forEach(servicio => {
+                    const option = document.createElement('option');
+                    const id = servicio.id || servicio.ensv_id || servicio.ENSV_ID || servicio.ID || '';
+                    const name = servicio.nombre || servicio.ensv_nombre || servicio.ENSV_NOMBRE || servicio.NOMBRE || String(id);
+                    option.value = id;
+                    option.textContent = name;
+
+                    if (String(id) === String(currentServicioId) || (String(currentServicioId) === '' && name === currentServicioName)) {
+                        option.selected = true;
+                    }
+                    selectServicio.appendChild(option);
+                });
+            })
+            .catch(err => {
+                console.error('Error al cargar servicios:', err);
+                selectServicio.innerHTML = '<option value="">Error al cargar</option>';
+            });
+    }
+
+    // Toggle del contenedor y carga de servicios
+    function toggleCambioServicio() {
+        if (!contCambio) return;
+        contCambio.classList.toggle('hidden');
+        if (!contCambio.classList.contains('hidden')) {
+            console.log("Mostrando contenedor de cambio de servicio. Cargando servicios...");
+            loadServiciosForUce();
+        }
+    }
+
+    // Listener directo y delegación (fallback si button está reemplazado por el DOM)
+    if (btnCambiar) {
+        btnCambiar.addEventListener('click', function(evt) {
+            console.log("Direct: Botón 'Cambiar servicio' presionado. ACFI_ID:", acfiId, " UCE_ID:", mainEl.dataset.uceId || uceHiddenVal);
+            toggleCambioServicio();
+        });
+    } else {
+        // Delegated fallback
+        document.addEventListener('click', function(e) {
+            if (e.target && e.target.closest && e.target.closest('#btn-cambiar-servicio')) {
+                console.log("Delegated: Botón 'Cambiar servicio' presionado. ACFI_ID:", acfiId, " UCE_ID:", mainEl.dataset.uceId || uceHiddenVal);
+                toggleCambioServicio();
+            }
+        });
+    }
+
+    // BOTÓN ACEPTA: Cambiar servicio
+    const btnAcepta = document.getElementById('btn-acepta-cambio');
+    if (btnAcepta) {
+        btnAcepta.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            console.log("\n=== CLICK EN BOTÓN ACEPTA (Cambiar Servicio) ===");
+            
+            // 1. Obtener el nuevo servicio seleccionado
+            if (!selectServicio || !selectServicio.value) {
+                console.error("ERROR: No hay servicio seleccionado");
+                alert('Por favor, seleccione un servicio.');
+                return;
+            }
+            
+            const nuevoServicioId = selectServicio.value;
+            const nuevoServicioNombre = selectServicio.options[selectServicio.selectedIndex].text;
+            
+            console.log("1. Nuevo servicio seleccionado:");
+            console.log("   - ID:", nuevoServicioId);
+            console.log("   - Nombre:", nuevoServicioNombre);
+            
+            console.log("2. Datos del main element:");
+            console.log("   - ACFI_ID:", acfiId);
+            console.log("   - TIPO_ORIGEN (dataset):", tipoOrigen);
+            console.log("   - ASTR_TIPO_ORIGEN (dataset.tipoOrigen):", mainEl.dataset.tipoOrigen);
+            console.log("   - data-tipo-origen (atributo HTML):", mainEl.getAttribute('data-tipo-origen'));
+            
+            // 2. Validar que no sea el mismo servicio
+            const servicioActual = "{{ info.SERVICIO|e }}";
+            if (nuevoServicioNombre === servicioActual) {
+                console.warn("Servicio seleccionado es igual al actual");
+                alert('El servicio seleccionado es el mismo que el actual.');
+                return;
+            }
+            
+            console.log("3. Servicio actual:", servicioActual);
+            console.log("4. Son diferentes, procediendo...");
+            
+            // 3. Confirmar la acción
+            if (!confirm(`¿Está seguro que desea cambiar el servicio a "${nuevoServicioNombre}"?`)) {
+                console.log("5. Usuario canceló la acción");
+                return;
+            }
+            
+            console.log("5. Usuario confirmó la acción");
+            
+            // 4. Preparar datos para enviar
+            const uceNombre = "{{ info.UCE|e }}";
+            
+            // Usar tipoOrigen obtenido al inicio
+            console.log("6. TIPO_ORIGEN a usar:", tipoOrigen);
+            
+            const datosAEnviar = {
+                acfi_id: acfiId,
+                nuevo_servicio_id: nuevoServicioId,
+                nuevo_servicio_nombre: nuevoServicioNombre,
+                uce_nombre: uceNombre,
+                tipo_producto: tipoOrigen  // Usar la variable obtenida al inicio
+            };
+            
+            console.log("7. Datos a enviar:", datosAEnviar);
+            console.log("8. JSON stringificado:", JSON.stringify(datosAEnviar));
+            
+            // 5. Validación final
+            if (!datosAEnviar.tipo_producto) {
+                console.error("ERROR CRÍTICO: tipo_producto está vacío");
+                alert('Error: No se pudo determinar el tipo de producto. Por favor, recargue la página.');
+                return;
+            }
+            
+            console.log("9. Validación final OK. Procediendo con la actualización...");
+            
+            // 6. Llamar función genérica de actualización
+            const mensajeExito = `¡Éxito! Servicio actualizado a ${nuevoServicioNombre}.`;
+            ejecutarActualizacion('/api/cambiar-servicio-at', datosAEnviar, mensajeExito);
+            
+            console.log("=== FIN: CLICK EN BOTÓN ACEPTA ===\n");
+        });
+    }
+    
+    // ===============================================
+    // BOTÓN: Reabrir/Cerrar AT ARA (Usa ejecutarActualizacion)
+    // ===============================================
+    const btnActualizarAT = document.getElementById('btn-actualizar-at');
+    if (btnActualizarAT) {
+        btnActualizarAT.addEventListener('click', function() {
+            const accion = this.dataset.accionDeseada; // 'reabrir' o 'cerrar'
+            const mensajeConfirm = `¿Está seguro que desea ${accion} la AT ARA?`;
+            
+            if (confirm(mensajeConfirm)) {
+                console.log("Usuario confirmó", accion);
+                
+                // Preparar datos para enviar
+                const datosAEnviar = {
+                    acfi_id: acfiId,
+                    accion: accion
+                };
+                
+                // Mensaje de éxito personalizado
+                let mensajeExito = '';
+                if (accion === 'reabrir') {
+                    mensajeExito = '¡Éxito! La AT ARA ha sido reabierta.';
+                } else if (accion === 'cerrar') {
+                    mensajeExito = '¡Éxito! La AT ARA ha sido cerrada.';
+                }
+                
+                // Llamar función genérica
+                ejecutarActualizacion('/api/actualizar-at-completa-ara', datosAEnviar, mensajeExito);
+            }
+        });
+    }
+
+    // ===============================================
+    // MANEJADOR DE CANDADOS: Clickable Locks (ARA)
+    // ===============================================
+    document.addEventListener('click', function(e) {
+        const lockEl = e.target.closest('.clickable-lock');
+        if (!lockEl) return;
+
+        const procId = lockEl.dataset.procId;
+        const procNombre = lockEl.dataset.procNombre;  // '1.1', '1.2', etc.
+        const accionDeseada = lockEl.dataset.accionDeseada; // 'cerrar' o 'reabrir'
+
+        console.log("=== CLICK EN CANDADO ARA ===");
+        console.log("1. procNombre:", procNombre);
+        console.log("2. accionDeseada:", accionDeseada);
+        console.log("3. acfiId:", acfiId);
+
+        if (!confirm(`¿Está seguro que desea ${accionDeseada} el procedimiento ${procNombre}?`)) {
+            console.log("4. Usuario canceló");
+            return;
+        }
+
+        // Determinar el nuevo estado
+        const nuevoEstado = accionDeseada === 'cerrar' ? 'CERRADO' : 'ABIERTO';
+        console.log("4. Nuevo estado:", nuevoEstado);
+
+        // Datos a enviar
+        const datosAEnviar = {
+            acfi_id: acfiId,
+            proc_nombre: procNombre,  // '1.1', '1.2', etc.
+            nuevo_estado: nuevoEstado
+        };
+
+        console.log("5. Datos a enviar:", datosAEnviar);
+
+        fetch('/api/actualizar-procedimiento-ara', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datosAEnviar)
+        })
+        .then(response => {
+            console.log("6. Status:", response.status);
+            if (!response.ok) {
+                console.error("ERROR HTTP:", response.status);
+                throw new Error(`HTTP ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log("7. Response:", data);
+            if (data.success) {
+                console.log("8. ¡Éxito!");
+                alert(`Procedimiento ${procNombre} actualizado a ${nuevoEstado}.`);
+                setTimeout(() => location.reload(), 500);
+            } else {
+                console.log("9. Error:", data.message);
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('10. Error en fetch:', error);
+            alert('Error al realizar la operación: ' + error.message);
+        });
+    });
+    
+    // ===============================================
+    // LÓGICA: Verificar si todos los candados están cerrados
+    // ===============================================
+    function checkAllClosed() {
+        const btn = document.getElementById('btn-actualizar-at');
+        if (!btn) return;
+        if (btn.dataset.accionDeseada !== 'cerrar') return;
+
+        const procNodes = Array.from(document.querySelectorAll('.clickable-lock'));
+        if (procNodes.length === 0) {
+            btn.setAttribute('disabled', 'disabled');
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+            btn.title = "No se puede cerrar. No hay procedimientos listados.";
+            return;
+        }
+
+        const allClosed = procNodes.every(node => node.textContent.trim() === 'lock');
+
+        if (allClosed) {
+            btn.removeAttribute('disabled');
+            btn.classList.remove('opacity-50', 'cursor-not-allowed');
+            btn.classList.add('hover:bg-red-700');
+            btn.title = "Cerrar la AT ARA";
+        } else {
+            btn.setAttribute('disabled', 'disabled');
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+            btn.classList.remove('hover:bg-red-700');
+            btn.title = "No se puede cerrar. Aún hay procedimientos abiertos o no iniciados.";
+        }
+    }
+
+    // Evaluar inicialmente y tras cambios en candados
+    checkAllClosed();
+    document.addEventListener('click', function(e) {
+        const el = e.target;
+        if (el && (el.classList.contains('clickable-lock') || (el.closest && el.closest('.clickable-lock')))) {
+            setTimeout(checkAllClosed, 200);
+        }
+    });
+
+});
+</script>
+
+</body>
+</html>

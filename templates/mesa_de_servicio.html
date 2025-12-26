@@ -103,56 +103,55 @@
   </div>
 
   <!-- PROCEDIMIENTO DISCIPLINARIO  -->
-  <!--<div class="group relative inline-block">
+  <div class="group relative inline-block">
     <button class="bg-transparent text-navbar-text text-sm font-bold py-2 px-4 rounded hover:bg-navbar-hover">
       PRDI ▾
     </button>
     <div class="hidden group-hover:block absolute bg-white shadow-lg rounded-md min-w-[260px] z-10">
-      <a href="#" class="block py-2 px-4 text-sm hover:bg-gray-100">Eliminar registro actividad PRDI</a> 
-      <a href="#" class="block py-2 px-4 text-sm hover:bg-gray-100">Reabrir registro flujo de revisión...</a> 
-      <a href="#" class="block py-2 px-4 text-sm hover:bg-gray-100">Enviar registro actividad Carpeta...</a>
-      <a href="#" class="block py-2 px-4 text-sm hover:bg-gray-100">Enviar registro actividad Expediente...</a> 
-    </div>
+    <a href="{{ url_for('prdi.pagina_buscador_prdi') }}" class="block py-2 px-4 text-sm hover:bg-gray-100">
+        Modificar registro actividad PRDI
+    </a> 
   </div>
-  -->
+  </div>
+
   <!-- SISTEMA INSPECCIÓN ACCIONES DERIVADAS   -->
   <div class="group relative inline-block">
     <button class="bg-transparent text-navbar-text text-sm font-bold py-2 px-4 rounded hover:bg-navbar-hover">
       SIAD ▾
     </button>
     <div class="hidden group-hover:block absolute bg-white shadow-lg rounded-md min-w-[260px] z-10">
-      <a href="{{ url_for('pagina_gestion_usuarios_siad') }}" class="block py-2 px-4 text-sm hover:bg-gray-100">Gestión de usuarios SIAD</a> 
-      <a href="{{ url_for('pagina_modificar_actuacion_siad') }}" class="block py-2 px-4 text-sm hover:bg-gray-100">Modificar registro actuación caso SIAD</a>
+      <a href="{{ url_for('siad_bp.pagina_gestion_usuarios_siad') }}" class="block py-2 px-4 text-sm hover:bg-gray-100">Gestión de usuarios SIAD</a> 
+      <a href="{{ url_for('siad_bp.pagina_modificar_actuacion_siad') }}" class="block py-2 px-4 text-sm hover:bg-gray-100">Modificar acto administrativo caso SIAD</a>
     </div>
   </div>
 
   <!-- SEGUIMIENTO   -->
-  <!--
+  
   <div class="group relative inline-block">
     <button class="bg-transparent text-navbar-text text-sm font-bold py-2 px-4 rounded hover:bg-navbar-hover">
       SEGUIMIENTO ▾
     </button>
     <div class="hidden group-hover:block absolute bg-white shadow-lg rounded-md min-w-[260px] z-10">
-      
+      <!----
       <div class="group/sub relative">
         <button class="w-full text-left py-2 px-4 text-sm font-semibold hover:bg-gray-100">Flujo de revisión seguimiento ▸</button>
         <div class="hidden group-hover/sub:block absolute left-full top-0 bg-white shadow-lg rounded-md min-w-[250px] z-10">
           <a href="#" class="block py-2 px-4 text-sm hover:bg-gray-100">Reabrir flujo de revisión</a>
         </div>
       </div>
-      
+    -->
       <div class="group/sub relative">
         <button class="w-full text-left py-2 px-4 text-sm font-semibold hover:bg-gray-100">OBSERVACIONES CONTABLES ▸</button>
         <div class="hidden group-hover/sub:block absolute left-full top-0 bg-white shadow-lg rounded-md min-w-[250px] z-10">
-          <a href="#" class="block py-2 px-4 text-sm hover:bg-gray-100">Modificar observación SEOBCON</a>
+        <a href="{{ url_for('seobcon_bp.pagina_modificar_seobcon') }}" class="block py-2 px-4 text-sm hover:bg-gray-100">Modificar observación SEOBCON</a>
         </div>
       </div>
 
     </div>
   </div>
-  -->
+  
   <!-- REPORTES   -->
-  <a href="{{ url_for('pagina_reportes') }}" class="bg-transparent text-navbar-text text-sm font-bold py-2 px-4 rounded hover:bg-navbar-hover">
+  <a href="{{ url_for('reportes_bp.pagina_reportes') }}" class="bg-transparent text-navbar-text text-sm font-bold py-2 px-4 rounded hover:bg-navbar-hover">
     REPORTES
   </a>
 
@@ -160,15 +159,65 @@
 
 <div class="h-1 bg-navbar-bg"></div>
 
-<div class="container mx-auto p-12 text-center">
-  
-  <h1 class="text-3xl font-bold text-primary mb-3">Mesa de Servicio</h1>
-  <p class="text-lg text-text-light max-w-2xl mx-auto">
-    Bienvenido a la Mesa de Servicio.<br>
-    Este es el centro de soporte institucional para la gestión de procesos de auditoría, cumplimiento e inspección.<br>
-    Seleccione el módulo correspondiente en el menú superior para realizar las acciones necesarias en los sistemas internos.
-  </p>
-</div>
+<header class="background-light border-b border-gray-200 py-6 mb-8">
+  <div class="container mx-auto p-12 text-center">
+    
+    <h1 class="text-3xl font-bold text-primary mb-3">Mesa de Servicio</h1>
+    <p class="text-lg text-text-light max-w-2xl mx-auto">
+      Bienvenido a la Mesa de Servicio.<br>
+      Este es el centro de soporte institucional para la gestión de procesos de Auditorías, Seguimientos, PRDI y otros sistemas.<br>
+      Seleccione el módulo correspondiente en el menú superior para realizar las acciones necesarias en los sistemas internos.
+    </p>
+  </div>
+</header>
+
+<main class="container mx-auto px-6 py-12 -mt-8"><!--
+  <div>
+      <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+          <span class="material-icons text-gray-600 mr-2">settings_applications</span> 
+            Transversales
+      </h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 flex items-center gap-4">
+          <div class="p-3 bg-white rounded-full shadow-sm">
+            <span class="material-icons text-primary">assessment</span>
+          </div>
+          <div>
+              <h4 class="font-bold text-gray-700">Agregar Cobertura</h4>
+                <span class="text-xs text-gray-500 block">Agregar Servicio Cobertura a ejecución</span>
+          </div>
+        </div>
+
+        <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 flex items-center gap-4">
+          <div class="p-3 bg-white rounded-full shadow-sm">
+            <span class="material-icons text-primary">draw</span>
+          </div>
+          <div>
+            <h4 class="font-bold text-gray-700">Firma Electrónica</h4>
+            <span class="text-xs text-gray-500 block">Gestión de firma</span>
+          </div>
+          </div>
+
+          <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 flex items-center gap-4">
+            <div class="p-3 bg-white rounded-full shadow-sm">
+              <span class="material-icons text-primary">group</span>
+            </div>
+            <div>
+              <h4 class="font-bold text-gray-700">Usuarios</h4>
+                <span class="text-xs text-gray-500 block">SICA / SISTRADOC</span>
+             </div>
+          </div>
+        </div>
+      </div>
+  </div> -->
+</main>
+
+    <footer class="background-light border-t border-gray-200 mt-12 py-6">
+        <div class="container mx-auto px-6 text-center text-sm text-gray-500">
+            &copy; 2025 Mesa de Servicio CTIC.
+        </div>
+    </footer>
 
 </body>
 </html>

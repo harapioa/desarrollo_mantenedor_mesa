@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Detalle Auditoría Cumplimiento</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<script>
+    tailwind.config = {
+        theme: { extend: { colors: { primary: '#005a9e', 'navbar-bg': '#B3DAE6', 'navbar-text': '#000066', 'navbar-hover': '#A2CCDB', "background-light": "#f5f5f5", "card-light": "#ffffff", "border-light": "#e2e8f0", "text-light": "#333333" }, fontFamily: { sans: ['Roboto', 'sans-serif'] } } } };
+</script>
+</head>
+
+<body class="bg-background-light font-sans">
+<div class="container mx-auto p-4">
+
+    <header class="flex justify-between items-center mb-4">
+        <a href="{{ url_for('pagina_buscador_ats', tipo_origen=info.ASTR_TIPO_ORIGEN) }}" class="text-lg text-primary hover:underline flex items-center">
+            <span class="material-icons text-base mr-1">arrow_back</span> Volver a la búsqueda
+        </a>
+        <a href="{{ url_for('pagina_principal') }}" class="text-lg text-primary hover:underline flex items-center">
+            <span class="material-icons text-base mr-1">home</span> Volver al Menú Principal
+        </a>
+    </header>
+
+    <nav class="bg-primary text-white p-3 rounded-md mb-6 shadow-md">
+        <ul class="flex items-center space-x-4 text-sm flex-wrap gap-y-2">
+            <li><strong class="uppercase">{{ info.ASTR_TIPO_ORIGEN.replace("_", " ") }}</strong> <span class="text-gray-300">&gt;</span></li>
+            <li><span class="font-bold uppercase">ACFI: {{ info.ACFI_ID }}</span> <span class="text-gray-300">|</span></li>
+            <li><span class="bg-blue-800 px-2 py-1 rounded text-xs">EJECUCIÓN: {{ info.ESTADO_EJECUCION }}</span></li>
+            <li><span class="bg-blue-800 px-2 py-1 rounded text-xs">FINAL: {{ info.ESTADO_FINAL }}</span></li>
+        </ul>
+    </nav>
+
+    {% set est_ejec = info.ESTADO_EJECUCION %}
+    {% set est_final = info.ESTADO_FINAL %}
+
+    <main data-acfi-id="{{ info.ACFI_ID }}">
+        {% macro render_candado(item, proc) %}
+            {% if item and item.estado == 'CERRADO' %}
+                <button class="clickable-lock group-lock focus:outline-none transition-transform hover:scale-110"
+                        data-proc-id="{{ item.id }}" 
+                        data-proc-nombre="{{ proc }}" 
+                        data-accion-deseada="reabrir" 
+                        title="Reabrir {{ proc }}">
+                    <span class="material-icons text-red-600">lock</span>
+                </button>
+            {% elif item and item.estado == 'ABIERTO' %}
+                <button class="clickable-lock group-lock focus:outline-none transition-transform hover:scale-110"
+                        data-proc-id="{{ item.id }}" 
+                        data-proc-nombre="{{ proc }}" 
+                        data-accion-deseada="cerrar" 
+                        title="Cerrar {{ proc }}">
+                    <span class="material-icons text-green-600">lock_open</span>
+                </button>
+            {% else %}
+                <span class="material-icons text-gray-300" title="No iniciado">lock_clock</span>
+            {% endif %}
+        {% endmacro %}
+
+        <div class="bg-card-light p-6 rounded-lg shadow-md border border-border-light mb-8">
+            <h3 class="font-semibold text-lg text-text-light border-b border-border-light pb-2 mb-4">Información General</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-text-light">
+                <div>
+                    <p><strong class="font-medium text-gray-500">Servicio:</strong> <span class="block text-gray-800">{{ info.SERVICIO or 'N/A' }}</span></p>
+                    <p class="mt-2"><strong class="font-medium text-gray-500">Estado Global:</strong>
+                        <span class="bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full text-xs font-bold">{{ info.ESTADO }}</span>
+                    </p>
+                </div>
+                <div>
+                    <p><strong class="font-medium text-gray-500">UCE:</strong> {{ info.UCE or 'N/A' }}</p>
+                    <p><strong class="font-medium text-gray-500">Tipo Programa:</strong> {{ info.TIPO_PROGRAMA or 'N/A' }}</p>
+                </div>
+                <div>
+                    <p><strong class="font-medium text-gray-500">Nº Programa:</strong> {{ info.N_PROGRAMA or 'N/A' }}</p>
+                    <p><strong class="font-medium text-gray-500">Nº Informe:</strong> {{ info.N_INFORME or 'N/A' }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <h3 class="text-xl font-bold mb-4 text-primary flex items-center">
+                <span class="material-icons mr-2">assignment</span> Avance de Fases
+            </h3>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                <div class="bg-white p-5 rounded-lg shadow-lg border-l-4 {% if est_ejec == 'CERRADA' %}border-green-500{% else %}border-blue-500{% endif %}">
+                    
+                    <div class="flex justify-between items-start mb-4 border-b pb-3">
+                        <div>
+                            <h4 class="font-bold text-lg text-gray-800">Fase Ejecución</h4>
+                            <span class="text-xs font-mono text-gray-500">Actividades 1.1 - 2.4</span>
+                        </div>
+                        
+                        <div class="flex flex-col items-end gap-2">
+                            <span class="text-xs font-bold px-2 py-1 rounded mb-1 {% if est_ejec == 'CERRADA' %}bg-green-100 text-green-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+                                {{ est_ejec }}
+                            </span>
+
+                            {% if est_ejec != 'CERRADA' %}
+                                <button onclick="gestionarFase('EJECUCION', 'CERRAR')" 
+                                        class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-1.5 px-3 rounded shadow flex items-center">
+                                    <span class="material-icons text-sm mr-1">lock</span> Cerrar Ejecución
+                                </button>
+                            {% endif %}
+
+                            {% if est_ejec == 'CERRADA' %}
+                                {% if est_final != 'CERRADA' %}
+                                    <button onclick="gestionarFase('EJECUCION', 'REABRIR')" 
+                                            class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-1.5 px-3 rounded shadow flex items-center">
+                                        <span class="material-icons text-sm mr-1">lock_open</span> Reabrir Ejecución
+                                    </button>
+                                {% else %}
+                                    <div class="text-xs text-gray-400 italic flex items-center">
+                                        <span class="material-icons text-sm mr-1">block</span> Bloqueado por Final
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <h5 class="font-semibold text-gray-700 text-sm mb-2 mt-2 border-b border-gray-100">Actividad 1: Preparación</h5>
+                    <div class="grid grid-cols-4 gap-2 text-center text-sm mb-4">
+                        {% for i in range(1, 5) %}
+                            {% set proc = '1.' ~ i %}
+                            {% set item = actividades.get(proc) %}
+                            <div class="flex flex-col items-center p-1">
+                                <span class="font-bold text-gray-600 mb-1">{{ proc }}</span>
+                                {{ render_candado(item, proc) }} </div>
+                        {% endfor %}
+                    </div>
+
+                    <h5 class="font-semibold text-gray-700 text-sm mb-2 mt-2 border-b border-gray-100">Actividad 2: Ejecución</h5>
+                    <div class="grid grid-cols-4 gap-2 text-center text-sm">
+                        {% for i in range(1, 5) %}
+                            {% set proc = '2.' ~ i %}
+                            {% set item = actividades.get(proc) %}
+                            <div class="flex flex-col items-center p-1">
+                                <span class="font-bold text-gray-600 mb-1">{{ proc }}</span>
+                                {{ render_candado(item, proc) }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-lg shadow-lg border-l-4 {% if est_final == 'CERRADA' %}border-red-500{% else %}border-orange-400{% endif %}">
+                    
+                    <div class="flex justify-between items-start mb-4 border-b pb-3">
+                        <div>
+                            <h4 class="font-bold text-lg text-gray-800">Fase Informe Final</h4>
+                            <span class="text-xs font-mono text-gray-500">Actividades 3.1 - 3.4</span>
+                        </div>
+                        
+                        <div class="flex flex-col items-end gap-2">
+                            <span class="text-xs font-bold px-2 py-1 rounded mb-1 {% if est_final == 'CERRADA' %}bg-red-100 text-red-800{% else %}bg-orange-100 text-orange-800{% endif %}">
+                                {{ est_final }}
+                            </span>
+
+                            {% if est_final != 'CERRADA' %}
+                                {% if est_ejec == 'CERRADA' %}
+                                    <button onclick="gestionarFase('INFORME_FINAL', 'CERRAR')" 
+                                            class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-1.5 px-3 rounded shadow flex items-center">
+                                        <span class="material-icons text-sm mr-1">lock</span> Cerrar Final
+                                    </button>
+                                {% else %}
+                                    <div class="text-xs text-orange-600 font-bold bg-orange-50 px-2 py-1 rounded border border-orange-200">
+                                        Esperando Cierre Ejec.
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+
+                            {% if est_final == 'CERRADA' %}
+                                <button onclick="gestionarFase('INFORME_FINAL', 'REABRIR')" 
+                                        class="bg-green-600 hover:bg-green-700 text-white text-xs font-bold py-1.5 px-3 rounded shadow flex items-center">
+                                    <span class="material-icons text-sm mr-1">lock_open</span> Reabrir Final
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-4 gap-2 text-center text-sm">
+                        {% for i in range(1, 5) %}
+                            {% set proc = '3.' ~ i %}
+                            {% set item = actividades.get(proc) %}
+                            <div class="flex flex-col items-center p-1">
+                                <span class="font-bold text-gray-600 mb-1">{{ proc }}</span>
+                                {{ render_candado(item, proc) }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+</div>
+
+<script id="candado-template" type="text/template">
+    {# Este bloque simula el include 'candado_partial.html' usando lógica jinja dentro del archivo #}
+</script>
+
+{% macro render_candado(item, proc) %}
+    {% if item and item.estado == 'CERRADO' %}
+        <button class="clickable-lock group-lock focus:outline-none transition-transform hover:scale-110"
+                data-proc-nombre="{{ proc }}" data-accion-deseada="reabrir" title="Reabrir {{ proc }}">
+            <span class="material-icons text-red-600">lock</span>
+        </button>
+    {% elif item and item.estado == 'ABIERTO' %}
+        <button class="clickable-lock group-lock focus:outline-none transition-transform hover:scale-110"
+                data-proc-nombre="{{ proc }}" data-accion-deseada="cerrar" title="Cerrar {{ proc }}">
+            <span class="material-icons text-green-600">lock_open</span>
+        </button>
+    {% else %}
+        <span class="material-icons text-gray-300" title="No iniciado">lock_clock</span>
+    {% endif %}
+{% endmacro %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const mainEl = document.querySelector('main');
+    const acfiId = mainEl.dataset.acfiId;
+
+    // --- GESTIÓN DE FASES ---
+    window.gestionarFase = function(fase, accion) {
+        // Validación Front: Todos los candados de la fase deben estar cerrados para cerrar fase
+        if (accion === 'CERRAR') {
+            let rangoProcs = [];
+            if (fase === 'EJECUCION') rangoProcs = ['1.1', '1.2', '1.3', '1.4', '2.1', '2.2', '2.3', '2.4'];
+            else rangoProcs = ['3.1', '3.2', '3.3', '3.4'];
+
+            // Buscar candados en DOM
+            let todosCerrados = true;
+            rangoProcs.forEach(proc => {
+                const btn = document.querySelector(`button[data-proc-nombre="${proc}"]`);
+                // Si no existe botón o no tiene candado rojo ('lock'), falla
+                if (!btn || !btn.querySelector('.material-icons').textContent.includes('lock')) {
+                    // Excepción: si el botón tiene lock_open es que está abierto. Si no existe (no iniciado), depende de tu regla de negocio.
+                    // Asumiremos que "No iniciado" (lock_clock) impide cierre también.
+                    // Ajuste: Buscamos el texto del icono directamente
+                    todosCerrados = false; 
+                }
+                // Refinamiento: Si el elemento existe y su icono es 'lock', ok.
+                if (btn && btn.querySelector('.material-icons').textContent.trim() === 'lock') {
+                     // Este está cerrado
+                } else {
+                    todosCerrados = false;
+                }
+            });
+
+            if (!todosCerrados) {
+                alert(`No se puede cerrar la fase ${fase}. Asegúrese de que todos los procedimientos (candados) estén cerrados.`);
+                return;
+            }
+        }
+
+        if(!confirm(`¿Seguro que desea ${accion} la fase ${fase}?`)) return;
+
+        fetch('/api/gestionar-fase-acum', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ acfi_id: acfiId, fase: fase, accion: accion })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert("Error: " + data.message);
+            }
+        });
+    };
+
+    // --- CANDADOS INDIVIDUALES (Misma lógica de siempre) ---
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.clickable-lock');
+        if (!btn) return;
+        
+        // Obtenemos los datos del botón
+        const procId = btn.dataset.procId;      // <--- AHORA USAMOS ESTE ID
+        const procNombre = btn.dataset.procNombre;
+        const accion = btn.dataset.accionDeseada;
+        const nuevoEstado = accion === 'cerrar' ? 'CERRADO' : 'ABIERTO';
+
+        if(!confirm(`¿Desea ${accion} el procedimiento ${procNombre}?`)) return;
+
+        fetch('/api/actualizar-procedimiento-acum', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ 
+                acfi_id: acfiId, 
+                proc_id: procId,     // <--- Enviamos el ID numérico
+                nuevo_estado: nuevoEstado 
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.success) {
+                location.reload();
+            } else {
+                alert("Error: " + data.message);
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Error de conexión.");
+        });
+    });
+});
+</script>
+
+</body>
+</html>
